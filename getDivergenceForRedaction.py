@@ -31,7 +31,7 @@ if __name__ == '__main__':
         p_feat = sentenceTransformerModel.encode(p_text)
         q_feat = sentenceTransformerModel.encode(p_text)
         # print(type(q_feat))
-        divergence = skl_efficient(p_feat, q_feat, k=1)
+        divergence = skl_efficient(p_feat, q_feat, k=5)
         dataToPlot.append([numWordsToMask,divergence])
     dataToPlot = np.asarray(dataToPlot)
     os.makedirs("new_divergence".format(dirName), exist_ok=True)
