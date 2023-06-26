@@ -34,7 +34,9 @@ if __name__ == '__main__':
         # print(type(q_feat)) kldiv
         num_clusters = min([p_feat.shape[0],q_feat.shape[0]])
         # divergence = ee.kldiv(p_feat, q_feat, k=int(num_clusters/10))
-        divergence = skl_efficient(p_feat, q_feat, k=int(num_clusters/10))
+        divergence_p = skl_efficient(p_feat, q_feat, k=int(num_clusters/10))
+        divergence_q = skl_efficient(q_feat, p_feat, k=int(num_clusters/10))
+        divergence = np.max([divergence_p,divergence_q])
         print("maskperc {} divergence {}".format(numWordsToMask,divergence))
         dataToPlot.append([numWordsToMask,divergence])
     dataToPlot = np.asarray(dataToPlot)
