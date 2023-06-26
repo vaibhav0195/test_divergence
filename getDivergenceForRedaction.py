@@ -33,7 +33,8 @@ if __name__ == '__main__':
         q_feat = sentenceTransformerModel.encode(p_text)
         # print(type(q_feat)) kldiv
         num_clusters = min([p_feat.shape[0],q_feat.shape[0]])
-        divergence = ee.kldiv(p_feat, q_feat, k=int(num_clusters/10))
+        # divergence = ee.kldiv(p_feat, q_feat, k=int(num_clusters/10))
+        divergence = skl_efficient(p_feat, q_feat, k=int(num_clusters/10))
         dataToPlot.append([numWordsToMask,divergence])
     dataToPlot = np.asarray(dataToPlot)
     os.makedirs("new_divergence".format(dirName), exist_ok=True)
