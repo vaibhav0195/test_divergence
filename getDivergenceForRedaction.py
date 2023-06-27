@@ -25,11 +25,11 @@ def normaliseData(p,q,norm='l2', whiten=False,
     data1 = np.vstack([q, p])
     if norm in ['l2', 'l1']:
         data1 = normalize(data1, norm=norm, axis=1)
-    # pca = PCA(n_components=None, whiten=whiten, random_state=seed + 1)
-    # pca.fit(data1)
-    # s = np.cumsum(pca.explained_variance_ratio_)
-    # idx = np.argmax(s >= explained_variance)  # last index to consider
-    # data1 = pca.transform(data1)[:, :idx + 1]
+    pca = PCA(n_components=None, whiten=whiten, random_state=seed + 1)
+    pca.fit(data1)
+    s = np.cumsum(pca.explained_variance_ratio_)
+    idx = np.argmax(s >= explained_variance)  # last index to consider
+    data1 = pca.transform(data1)[:, :idx + 1]
     p_data = data1[q.shape[0]: , :]
     q_data = data1[:q.shape[0], :]
     return p_data,q_data
