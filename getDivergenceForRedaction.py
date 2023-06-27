@@ -22,15 +22,15 @@ def getPqFromNpyData(npyFilePath):
 
 def normaliseData(p,q,norm='l2', whiten=False,
                          pca_max_data=-1,
-                         explained_variance=0.9,seed=25):
+                         explained_variance=0.95,seed=25):
     data1 = np.vstack([q, p])
     if norm in ['l2', 'l1']:
         data1 = normalize(data1, norm=norm, axis=1)
-    # pca = PCA(n_components=None, whiten=whiten, random_state=seed + 1)
-    # pca.fit(data1)
-    # s = np.cumsum(pca.explained_variance_ratio_)
-    # idx = np.argmax(s >= explained_variance)  # last index to consider
-    # data1 = pca.transform(data1)[:, :idx + 1]
+    pca = PCA(n_components=None, whiten=whiten, random_state=seed + 1)
+    pca.fit(data1)
+    s = np.cumsum(pca.explained_variance_ratio_)
+    idx = np.argmax(s >= explained_variance)  # last index to consider
+    data1 = pca.transform(data1)[:, :idx + 1]
     p_data = data1[q.shape[0]: , :]
     q_data = data1[:q.shape[0], :]
     return p_data,q_data
@@ -56,7 +56,7 @@ if __name__ == '__main__':
             q_feat = sentenceTransformerModel.encode(p_text)
             # print(type(q_feat)) kldiv
             num_clusters = min([p_feat.shape[0],q_feat.shape[0]])
-            p_feat,q_feat = normaliseData(p_feat,q_feat,norm='l1')
+            p_feat,q_feat = normaliseData(p_feat,q_feat,norm='l2')
             divergence = ee.kldiv(p_feat, q_feat, k=int(num_clusters/10),base=math.e)
             # divergence = skl_efficient(p_feat, q_feat, k=int(5))
             # divergence_q = skl_efficient(q_feat, p_feat, k=int(num_clusters/10))
