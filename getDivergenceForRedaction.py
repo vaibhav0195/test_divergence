@@ -26,7 +26,7 @@ def normaliseData(p,q,norm='l2', whiten=False,
     data1 = np.vstack([q, p])
     if norm in ['l2', 'l1']:
         data1 = normalize(data1, norm=norm, axis=1)
-    varData = np.var(data1)
+    varData = np.sum(np.var(data1,axis=0))
     if varData > 0.5:
         pca = PCA(n_components=None, whiten=whiten, random_state=seed + 1)
         pca.fit(data1)
