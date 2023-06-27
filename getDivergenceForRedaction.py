@@ -36,32 +36,35 @@ def normaliseData(p,q,norm='l2', whiten=False,
     return p_data,q_data
 
 if __name__ == '__main__':
-    dirName = "smartMaskingGenderDataset"
-    outDir = "/home/vaibhav/ML/bartexps/{}".format(dirName)
-    dataToPlot = []
-    sentenceTransformerModel = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-    # for numNeighbou in [0, 10, 50, 100]:
-    # dataToPlot = []
-    # for numNeighbou in [0, 10, 50, 100,200]:
-    for maskPerc in os.listdir(outDir):
-        if '.' in maskPerc:
-            continue
-        numWordsToMask = float(maskPerc)
-        npyDataFilePath = outDir + "/{}/sentOut.npy".format(maskPerc)
-        p_text, q_text = getPqFromNpyData(npyDataFilePath)
-        p_feat = sentenceTransformerModel.encode(p_text)
-        q_feat = sentenceTransformerModel.encode(p_text)
-        # print(type(q_feat)) kldiv
-        num_clusters = min([p_feat.shape[0],q_feat.shape[0]])
-        p_feat,q_feat = normaliseData(p_feat,q_feat)
-        divergence = ee.kldiv(p_feat, q_feat, k=int(5),base=math.e)
-        # divergence = skl_efficient(p_feat, q_feat, k=int(5))
-        # divergence_q = skl_efficient(q_feat, p_feat, k=int(num_clusters/10))
-        # divergence = np.max([divergence_p,divergence_q])
-        print("maskperc {} divergence {}".format(numWordsToMask,divergence))
-        dataToPlot.append([numWordsToMask,divergence])
-    dataToPlot = np.asarray(dataToPlot)
-    os.makedirs("new_divergence".format(dirName), exist_ok=True)
-    np.save("new_divergence/{}_new_divergence.npy".format(dirName, dirName),
-            dataToPlot)
+    dirNames = ["smartMaskingGenderDataset_new", "smartMaskingPoliticalDataset", "smart_masking_redit_suicide",
+                "smartMaskingValidationMedal"]
+    for dirName in dirNames:
+
+        outDir = "/home/vaibhav/ML/bartexps/{}".format(dirName)
+        dataToPlot = []
+        sentenceTransformerModel = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+        # for numNeighbou in [0, 10, 50, 100]:
+        # dataToPlot = []
+        # for numNeighbou in [0, 10, 50, 100,200]:
+        for maskPerc in os.listdir(outDir):
+            if '.' in maskPerc:
+                continue
+            numWordsToMask = float(maskPerc)
+            npyDataFilePath = outDir + "/{}/sentOut.npy".format(maskPerc)
+            p_text, q_text = getPqFromNpyData(npyDataFilePath)
+            p_feat = sentenceTransformerModel.encode(p_text)
+            q_feat = sentenceTransformerModel.encode(p_text)
+            # print(type(q_feat)) kldiv
+            num_clusters = min([p_feat.shape[0],q_feat.shape[0]])
+            p_feat,q_feat = normaliseData(p_feat,q_feat)
+            divergence = ee.kldiv(p_feat, q_feat, k=int(num_clusters),base=math.e)
+            # divergence = skl_efficient(p_feat, q_feat, k=int(5))
+            # divergence_q = skl_efficient(q_feat, p_feat, k=int(num_clusters/10))
+            # divergence = np.max([divergence_p,divergence_q])
+            print("maskperc {} divergence {}".format(numWordsToMask,divergence))
+            dataToPlot.append([numWordsToMask,divergence])
+        dataToPlot = np.asarray(dataToPlot)
+        os.makedirs("new_divergence".format(dirName), exist_ok=True)
+        np.save("new_divergence/{}_new_divergence.npy".format(dirName, dirName),
+                dataToPlot)
     pass
