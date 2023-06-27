@@ -64,7 +64,7 @@ if __name__ == '__main__':
             print("maskperc {} divergence {}".format(numWordsToMask,divergence))
             dataToPlot.append([numWordsToMask,divergence])
         dataToPlot = np.asarray(dataToPlot)
-        os.makedirs("new_divergence_nopca_l1".format(dirName), exist_ok=True)
-        np.save("new_divergence_nopca_l1/{}_new_divergence.npy".format(dirName, dirName),
+        os.makedirs("new_divergence_pca_95var".format(dirName), exist_ok=True)
+        np.save("new_divergence_pca_95var/{}_new_divergence.npy".format(dirName, dirName),
                 dataToPlot)
     pass
