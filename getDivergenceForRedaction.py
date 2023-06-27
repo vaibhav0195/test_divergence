@@ -54,7 +54,7 @@ if __name__ == '__main__':
         num_clusters = min([p_feat.shape[0],q_feat.shape[0]])
         p_feat,q_feat = normaliseData(p_feat,q_feat)
         # divergence = ee.kldiv(p_feat, q_feat, k=int(num_clusters/10))
-        divergence = skl_efficient(p_feat, q_feat, k=int(1))
+        divergence = skl_efficient(p_feat, q_feat, k=int(5))
         # divergence_q = skl_efficient(q_feat, p_feat, k=int(num_clusters/10))
         # divergence = np.max([divergence_p,divergence_q])
         print("maskperc {} divergence {}".format(numWordsToMask,divergence))
