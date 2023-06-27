@@ -6,6 +6,7 @@ import os
 from npeet import entropy_estimators as ee
 from sklearn.preprocessing import normalize
 from sklearn.decomposition import PCA
+import math
 
 def getPqFromNpyData(npyFilePath):
     sentOutPair = np.load(npyFilePath, allow_pickle=True)
@@ -53,7 +54,7 @@ if __name__ == '__main__':
         # print(type(q_feat)) kldiv
         num_clusters = min([p_feat.shape[0],q_feat.shape[0]])
         p_feat,q_feat = normaliseData(p_feat,q_feat)
-        divergence = ee.kldiv(p_feat, q_feat, k=int(num_clusters/10))
+        divergence = ee.kldiv(p_feat, q_feat, k=int(num_clusters),base=math.e)
         # divergence = skl_efficient(p_feat, q_feat, k=int(5))
         # divergence_q = skl_efficient(q_feat, p_feat, k=int(num_clusters/10))
         # divergence = np.max([divergence_p,divergence_q])
