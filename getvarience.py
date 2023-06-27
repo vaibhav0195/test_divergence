@@ -29,8 +29,8 @@ def getcumsumVariance(p,q,norm='l2', whiten=False,
     pca = PCA(n_components=None, whiten=whiten, random_state=seed + 1)
     pca.fit(data1)
     s = np.cumsum(pca.explained_variance_ratio_)
-
-    return s[-1]
+    varData = np.var(data1)
+    return varData
 
 if __name__ == '__main__':
     dirNames = ["smartMaskingGenderDataset_new", "smartMaskingPoliticalDataset", "smart_masking_redit_suicide",
