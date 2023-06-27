@@ -35,7 +35,7 @@ def normaliseData(p,q,norm='l2', whiten=False,
     return p_data,q_data
 
 if __name__ == '__main__':
-    dirName = "smartMaskingValidationMedal"
+    dirName = "smartMaskingGenderDataset"
     outDir = "/home/vaibhav/ML/bartexps/{}".format(dirName)
     dataToPlot = []
     sentenceTransformerModel = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
