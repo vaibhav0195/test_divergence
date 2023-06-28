@@ -27,13 +27,13 @@ def normaliseData(p,q,norm='l2', whiten=False,
     data1 = np.vstack([q, p])
     if norm in ['l2', 'l1']:
         data1 = normalize(data1, norm=norm, axis=1)
-    varData = np.sum(np.var(data1,axis=0))
-    if varData > 0.5:
-        pca = PCA(n_components=None, whiten=whiten, random_state=seed + 1)
-        pca.fit(data1)
-        s = np.cumsum(pca.explained_variance_ratio_)
-        idx = np.argmax(s >= explained_variance)  # last index to consider
-        data1 = pca.transform(data1)[:, :idx + 1]
+    # varData = np.sum(np.var(data1,axis=0))
+    # if varData > 0.5:
+    pca = PCA(n_components=None, whiten=whiten, random_state=seed + 1)
+    pca.fit(data1)
+    s = np.cumsum(pca.explained_variance_ratio_)
+    idx = np.argmax(s >= explained_variance)  # last index to consider
+    data1 = pca.transform(data1)[:, :idx + 1]
     p_data = data1[q.shape[0]: , :]
     q_data = data1[:q.shape[0], :]
     return p_data,q_data
@@ -56,7 +56,7 @@ if __name__ == '__main__':
             npyDataFilePath = outDir + "/{}/sentOut.npy".format(maskPerc)
             p_text, q_text = getPqFromNpyData(npyDataFilePath)
             p_feat_orignal = sentenceTransformerModel.encode(p_text)
-            q_feat_orignal = sentenceTransformerModel.encode(p_text)
+            q_feat_orignal = sentenceTransformerModel.encode(q_text)
             # print(type(q_feat)) kldiv
             num_clusters = min([p_feat_orignal.shape[0],q_feat_orignal.shape[0]])
             p_feat,q_feat = normaliseData(p_feat_orignal,q_feat_orignal,norm='l2')
@@ -70,7 +70,7 @@ if __name__ == '__main__':
             print("maskperc {} divergence {}".format(numWordsToMask,divergence))
             dataToPlot.append([numWordsToMask,divergence,divergenceMauve])
         dataToPlot = np.asarray(dataToPlot)
-        os.makedirs("new_divergence_pca_mauve_clippeddiv".format(dirName), exist_ok=True)
-        np.save("new_divergence_pca_mauve_clippeddiv/{}_new_divergence.npy".format(dirName, dirName),
+        os.makedirs("new_divergence_pca_mauve".format(dirName), exist_ok=True)
+        np.save("new_divergence_pca_mauve/{}_new_divergence.npy".format(dirName, dirName),
                 dataToPlot)
     pass
