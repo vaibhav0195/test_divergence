@@ -7,6 +7,7 @@ from npeet import entropy_estimators as ee
 from sklearn.preprocessing import normalize
 from sklearn.decomposition import PCA
 import math
+import mauve
 
 def getPqFromNpyData(npyFilePath):
     sentOutPair = np.load(npyFilePath, allow_pickle=True)
@@ -26,13 +27,13 @@ def normaliseData(p,q,norm='l2', whiten=False,
     data1 = np.vstack([q, p])
     if norm in ['l2', 'l1']:
         data1 = normalize(data1, norm=norm, axis=1)
-    varData = np.sum(np.var(data1,axis=0))
-    if varData > 0.5:
-        pca = PCA(n_components=None, whiten=whiten, random_state=seed + 1)
-        pca.fit(data1)
-        s = np.cumsum(pca.explained_variance_ratio_)
-        idx = np.argmax(s >= explained_variance)  # last index to consider
-        data1 = pca.transform(data1)[:, :idx + 1]
+    # varData = np.sum(np.var(data1,axis=0))
+    # if varData > 0.5:
+    pca = PCA(n_components=None, whiten=whiten, random_state=seed + 1)
+    pca.fit(data1)
+    s = np.cumsum(pca.explained_variance_ratio_)
+    idx = np.argmax(s >= explained_variance)  # last index to consider
+    data1 = pca.transform(data1)[:, :idx + 1]
     p_data = data1[q.shape[0]: , :]
     q_data = data1[:q.shape[0], :]
     return p_data,q_data
@@ -54,19 +55,22 @@ if __name__ == '__main__':
             numWordsToMask = float(maskPerc)
             npyDataFilePath = outDir + "/{}/sentOut.npy".format(maskPerc)
             p_text, q_text = getPqFromNpyData(npyDataFilePath)
-            p_feat = sentenceTransformerModel.encode(p_text)
-            q_feat = sentenceTransformerModel.encode(p_text)
+            p_feat_orignal = sentenceTransformerModel.encode(p_text)
+            q_feat_orignal = sentenceTransformerModel.encode(p_text)
             # print(type(q_feat)) kldiv
-            num_clusters = min([p_feat.shape[0],q_feat.shape[0]])
-            p_feat,q_feat = normaliseData(p_feat,q_feat,norm='l2')
-            divergence = ee.kldiv(p_feat, q_feat, k=int(num_clusters/10),base=math.e)
-            # divergence = skl_efficient(p_feat, q_feat, k=int(5))
+            num_clusters = min([p_feat_orignal.shape[0],q_feat_orignal.shape[0]])
+            p_feat,q_feat = normaliseData(p_feat_orignal,q_feat_orignal,norm='l2')
+            # divergence = ee.kldiv(p_feat, q_feat, k=int(num_clusters/10),base=math.e)
+            divergence = skl_efficient(p_feat, q_feat, k=int(num_clusters/10))
+            out = mauve.compute_mauve(p_features=p_feat_orignal, q_features=q_feat_orignal,
+                                      verbose=False, mauve_scaling_factor=1.0)
+            divergenceMauve = np.max([-np.log(out.divergence_curve[1, 1]),-np.log(out.divergence_curve[-2, 0])])
             # divergence_q = skl_efficient(q_feat, p_feat, k=int(num_clusters/10))
             # divergence = np.max([divergence_p,divergence_q])
             print("maskperc {} divergence {}".format(numWordsToMask,divergence))
-            dataToPlot.append([numWordsToMask,divergence])
+            dataToPlot.append([numWordsToMask,divergence,divergenceMauve])
         dataToPlot = np.asarray(dataToPlot)
-        os.makedirs("new_divergence_pca_95var".format(dirName), exist_ok=True)
-        np.save("new_divergence_pca_95var/{}_new_divergence.npy".format(dirName, dirName),
+        os.makedirs("new_divergence_pca_mauve".format(dirName), exist_ok=True)
+        np.save("new_divergence_pca_mauve/{}_new_divergence.npy".format(dirName, dirName),
                 dataToPlot)
     pass
