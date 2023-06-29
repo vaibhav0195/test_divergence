@@ -38,6 +38,14 @@ def normaliseData(p,q,norm='l2', whiten=False,
     q_data = data1[:q.shape[0], :]
     return p_data,q_data
 
+def getRandomWithReplacement(inp_feat):
+    inp_ret = []
+    numSamplesretinp = [i for i in range(inp_feat.shape[0])]
+    for idx_inp in numSamplesretinp:
+        inp_ret.append(inp_feat[idx_inp])
+    inp_ret = np.asarray(inp_ret)
+    return inp_ret
+
 if __name__ == '__main__':
     dirNames = ["smartMaskingGenderDataset_new", "smartMaskingPoliticalDataset", "smart_masking_redit_suicide",
                 "smartMaskingValidationMedal"]
@@ -59,16 +67,25 @@ if __name__ == '__main__':
             q_feat_orignal = sentenceTransformerModel.encode(q_text)
             # print(type(q_feat)) kldiv
             num_clusters = min([p_feat_orignal.shape[0],q_feat_orignal.shape[0]])
-            p_feat,q_feat = normaliseData(p_feat_orignal,q_feat_orignal,norm='l2')
-            # divergence = ee.kldiv(p_feat, q_feat, k=int(num_clusters/10),base=math.e)
-            divergence = skl_efficient(p_feat, q_feat, k=int(num_clusters/10))
-            out = mauve.compute_mauve(p_features=p_feat_orignal, q_features=q_feat_orignal,
-                                      verbose=False, mauve_scaling_factor=1.0)
-            divergenceMauve = np.max([-np.log(out.divergence_curve[1, 1]),-np.log(out.divergence_curve[-2, 0])])
-            # divergence_q = skl_efficient(q_feat, p_feat, k=int(num_clusters/10))
-            # divergence = np.max([divergence_p,divergence_q])
-            print("maskperc {} divergence {}".format(numWordsToMask,divergence))
-            dataToPlot.append([numWordsToMask,divergence,divergenceMauve])
+            divergences = []
+            mauveDivergences = []
+            for bootstap_idx in range(10):
+                p_feat_sampled = getRandomWithReplacement(p_feat_orignal)
+                q_feat_sampled = getRandomWithReplacement(q_feat_orignal)
+                p_feat,q_feat = normaliseData(p_feat_sampled,q_feat_sampled,norm='l2')
+                # divergence = ee.kldiv(p_feat, q_feat, k=int(num_clusters/10),base=math.e)
+                # np.random.choice(colors, n)
+                divergence = skl_efficient(p_feat, q_feat, k=int(5))
+                out = mauve.compute_mauve(p_features=p_feat_sampled, q_features=q_feat_sampled,
+                                          verbose=False, mauve_scaling_factor=1.0)
+                divergenceMauve = np.max([-np.log(out.divergence_curve[1, 1]),-np.log(out.divergence_curve[-2, 0])])
+                divergences.append(divergence)
+                mauveDivergences.append(divergenceMauve)
+            divergences = np.asarray(divergences)
+            mauveDivergences = np.asarray(mauveDivergences)
+
+            dataToPlot.append([numWordsToMask,np.mean(divergences),np.std(divergences),
+                               np.mean(mauveDivergences),np.std(mauveDivergences)])
         dataToPlot = np.asarray(dataToPlot)
         os.makedirs("new_divergence_pca_mauve".format(dirName), exist_ok=True)
         np.save("new_divergence_pca_mauve/{}_new_divergence.npy".format(dirName, dirName),
