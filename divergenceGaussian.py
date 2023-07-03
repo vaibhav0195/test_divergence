@@ -64,7 +64,7 @@ if __name__ == '__main__':
     Y_div_new = []
     Y_mauve = []
     Y_div_gt = []
-    for sample_size in [50,100,200,1000]:
+    for sample_size in [50,100,200,500]:
 
         print(sample_size)
         # num_clusters = min([p_feat_orignal.shape[0],q_feat_orignal.shape[0]])
@@ -74,11 +74,22 @@ if __name__ == '__main__':
         for bootstap_idx in range(5):
             # p_feat_sampled = getRandomWithReplacement(p_feat_orignal)
             # q_feat_sampled = getRandomWithReplacement(q_feat_orignal)
-            p_feat_sampled = np.random.multivariate_normal([0], [[1]], sample_size)
-            q_feat_sampled = np.random.multivariate_normal([5], [[4]], sample_size)
-            std_between_samples = abs(float(np.std(p_feat_sampled))- float(np.std(q_feat_sampled)))
-            actualDive    = gaussian_divergence_ndims([float(np.mean(p_feat_sampled))], [float(np.mean(q_feat_sampled))],
-                                             [[float(np.std(p_feat_sampled))]], [[float(np.std(q_feat_sampled))]])
+            mean_p = [0]
+            std_p = [[1]]
+            mean_q = [5]
+            std_q = [[4]]
+            p_feat_sampled = np.random.multivariate_normal(mean_p,std_p , sample_size)
+            q_feat_sampled = np.random.multivariate_normal(mean_q, std_q, sample_size)
+            # std_between_samples = abs(float(np.std(p_feat_sampled))- float(np.std(q_feat_sampled)))
+            mean_sampled_p = np.mean(p_feat_sampled,axis=0)
+            mean_sampled_q = np.mean(q_feat_sampled,axis=0)
+
+            std_sampled_p = np.cov(p_feat_sampled.T)
+            std_sampled_q = np.cov(q_feat_sampled.T)
+            if len(std_sampled_p.shape) == 0:
+                std_sampled_p = std_sampled_p.reshape(1,1)
+                std_sampled_q = std_sampled_q.reshape(1,1)
+            actualDive    = gaussian_divergence_ndims(mean_sampled_p,mean_sampled_q,std_sampled_p,std_sampled_q)
             num_clusters = min([q_feat_sampled.shape[0], p_feat_sampled.shape[0]])
             divergence = estimate(p_feat_sampled, q_feat_sampled)
             # divergence = skl_efficient(p_feat_sampled, q_feat_sampled, k=13)
