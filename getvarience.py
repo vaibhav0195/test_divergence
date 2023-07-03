@@ -30,7 +30,7 @@ def getcumsumVariance(p,q,norm='l2', whiten=False,
     pca.fit(data1)
     s = np.cumsum(pca.explained_variance_ratio_)
     varData = np.var(data1)
-    varData = np.sum(np.var(data1, axis=0))
+    varData = np.sum(np.var(data1, axis=1))
     return varData
 
 if __name__ == '__main__':
